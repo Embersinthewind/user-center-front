@@ -16,7 +16,11 @@ declare namespace API {
     createTime?: Date;
     userRole?: number;
   };
-
+  type UpdateUser = {
+    id?: number;
+    userName?: string;
+    userRole?: number;
+  };
   type LoginResult = {
     status?: string;
     type?: string;
@@ -29,11 +33,11 @@ declare namespace API {
    * 通用返回类
    */
   type BaseResponse<T> = {
-    code: number,
-    data: T,
-    message: string,
-    description: string,
-  }
+    code: number;
+    data: T;
+    message: string;
+    description: string;
+  };
 
   type PageParams = {
     current?: number;

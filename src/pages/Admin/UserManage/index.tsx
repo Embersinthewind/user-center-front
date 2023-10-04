@@ -1,7 +1,8 @@
-import type {ActionType, ProColumns} from '@ant-design/pro-components';
-import {ProTable, TableDropdown} from '@ant-design/pro-components';
-import {useRef} from 'react';
-import { searchUsers} from "@/services/ant-design-pro/api";
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { ProTable } from '@ant-design/pro-components';
+import { useRef } from 'react';
+import { currentUser, deleteUser, searchUsers } from '@/services/ant-design-pro/api';
+import { message, Modal } from 'antd';
 
 export const waitTimePromise = async (time: number = 100) => {
   return new Promise((resolve) => {
@@ -14,7 +15,6 @@ export const waitTimePromise = async (time: number = 100) => {
 export const waitTime = async (time: number = 100) => {
   await waitTimePromise(time);
 };
-
 
 const columns: ProColumns<API.CurrentUser>[] = [
   {
@@ -98,30 +98,47 @@ const columns: ProColumns<API.CurrentUser>[] = [
     title: '操作',
     valueType: 'option',
     key: 'option',
+
     render: (text, record, _, action) => [
+      //编辑按钮
       <a
-        key="editable"
+        key="configUser"
         onClick={() => {
-          // @ts-ignore
-          action?.startEditable?.(record.id);
+          window.location.href = `/admin/edit-user?editId=${record.id}&userName=${record.username}&userRole=${record.userRole}`;
         }}
       >
-        编辑
+        修改
       </a>,
-      <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
-        查看
+
+      //删除按钮
+      <a
+        key="deleteUser"
+        onClick={async () => {
+          const loginUser = await currentUser();
+          Modal.confirm({
+            title: '确认删除',
+            content: `您确定要删除${record.username}吗？`,
+            okText: '确认',
+            cancelText: '取消',
+            async onOk() {
+              if (loginUser?.data?.id !== record?.id) {
+                // 调用删除接口
+                if (record?.id != null) {
+                  deleteUser(record?.id).then(() => {
+                    message.success('删除成功');
+                    // 删除操作成功后重定向到当前页面
+                    window.location.href = window.location.href;
+                  });
+                }
+              } else {
+                message.error('你不能删除自己！');
+              }
+            },
+          });
+        }}
+      >
+        删除
       </a>,
-      <TableDropdown
-        key="actionGroup"
-        onSelect={() => action?.reload()}
-        menus={[
-          {key: 'copy', name: '复制'},
-          {
-            key: 'delete',
-            name: '删除'
-          },
-        ]}
-      />,
     ],
   },
 ];
@@ -140,8 +157,8 @@ export default () => {
         await waitTime(2000);
         const userList = await searchUsers();
         return {
-          data: userList
-        }
+          data: userList,
+        };
       }}
       editable={{
         type: 'multiple',
@@ -180,7 +197,7 @@ export default () => {
         onChange: (page) => console.log(page),
       }}
       dateFormatter="string"
-      headerTitle="高级表格"
+      headerTitle="用户列表"
       toolBarRender={() => []}
     />
   );

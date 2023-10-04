@@ -50,10 +50,25 @@ export async function searchUsers(options?: { [key: string]: any }) {
   });
 }
 
-/** 删除用户 GET /api/user/delete */
-export async function deleteUsers(options?: { [key: string]: any }) {
-  return request<API.BaseResponse<API.CurrentUser>>('/api/user/delete', {
-    method: 'GET',
+/** 删除用户 DELETE /api/user/{id} */
+export async function deleteUser(userId?: number) {
+  return request<API.BaseResponse<API.CurrentUser[]>>('/api/user/delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: { id: userId }, // 将 options 作为请求体传递给后端，可以根据实际需求进行调整
+  });
+}
+
+/** 编辑更新用户 POST /api/updateUser */
+export async function updateUser(body: API.UpdateUser, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<number>>(`/api/user/updateUser`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   });
 }
